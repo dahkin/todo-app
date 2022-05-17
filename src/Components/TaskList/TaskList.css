@@ -1,5 +1,7 @@
 /* Loader */
-.tasklist__loader {animation: rotation 2s infinite linear;}
+.tasklist__loader {
+  animation: rotation 2s infinite linear;
+}
 
 @keyframes rotation {
   from {

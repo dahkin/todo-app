@@ -44,7 +44,7 @@ export const Task: FC<Props> = ({ task, addSnackbarMessage, editState, changeMod
     </Button>
   );
 
-  // Deleting
+  // Deleting (only editing isRemoved prop, to provide possibility to undo the action)
   const hideTask = () => {
     updateTask(user.uid, task.id, { isRemoved: true })
       .then(() => {

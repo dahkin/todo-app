@@ -15,22 +15,13 @@ interface Props {
     message: SnackbarMessage['message'],
     action?: SnackbarMessage['action']
   ) => void;
-  cancelClick?: () => void;
+  closeEdit: () => void;
   addState?: (value: Omit<TTask, 'created' | 'isRemoved' | 'viewMode'>) => void;
   editState?: (id: string, value: Partial<Omit<TTask, 'id' | 'created'>>) => void;
   setEditedTask?: Dispatch<SetStateAction<string>>;
-  onAddNew?: VoidFunction;
 }
 
-export const EditTask: FC<Props> = ({
-  task,
-  addSnackbarMessage,
-  cancelClick,
-  addState,
-  editState,
-  onAddNew,
-  setEditedTask,
-}) => {
+export const EditTask: FC<Props> = ({ task, addSnackbarMessage, closeEdit, addState, editState, setEditedTask }) => {
   const { user } = useAuthContext();
   const inputRefs: InputRefs = {
     title: useRef<HTMLInputElement>(),
@@ -93,6 +84,7 @@ export const EditTask: FC<Props> = ({
         .then(() => {
           editState && editState(task.id, { title: inputValues.title, description: inputValues.description });
           setEditedTask && setEditedTask('');
+          closeEdit();
           addSnackbarMessage('success', 'Задача обновлена');
         })
         .catch((error) => {
@@ -103,7 +95,7 @@ export const EditTask: FC<Props> = ({
       createTask(user.uid, data)
         .then((id) => {
           addState && addState({ id: id, title: inputValues.title, description: inputValues.description });
-          onAddNew && onAddNew();
+          closeEdit();
           addSnackbarMessage('success', 'Задача создана');
         })
         .catch((error) => {
@@ -158,7 +150,7 @@ export const EditTask: FC<Props> = ({
           <Button type="submit" variant="outlined" color="primary">
             Сохранить
           </Button>
-          <Button type="button" color="primary" onClick={cancelClick}>
+          <Button type="button" color="primary" onClick={closeEdit}>
             Отмена
           </Button>
         </Stack>

@@ -83,6 +83,10 @@ export const TaskList: FC = () => {
     setExpandedAddNew(false);
   };
 
+  const cancelEdit = () => {
+    setEditedTask('');
+  };
+
   // Scrolling to the opened section
   useEffect(() => {
     if (expandedAddNew) {
@@ -127,7 +131,7 @@ export const TaskList: FC = () => {
                       dispatch({ type: 'edit', id: id, value: value });
                       setClearedTasks(true);
                     }}
-                    cancelClick={() => setEditedTask('')}
+                    closeEdit={cancelEdit}
                   />
                 </Stack>
               )
@@ -147,9 +151,8 @@ export const TaskList: FC = () => {
         {expandedAddNew ? (
           <EditTask
             addSnackbarMessage={addSnackbarMessage}
-            cancelClick={cancelAddNew}
+            closeEdit={cancelAddNew}
             addState={(value) => dispatch({ type: 'add', value: value })}
-            onAddNew={() => setExpandedAddNew(false)}
           />
         ) : (
           <Stack alignItems="center">

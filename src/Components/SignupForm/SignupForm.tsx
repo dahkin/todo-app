@@ -15,11 +15,12 @@ type TProps = {
   className?: string;
   email: TLoginField;
   password: TLoginField;
+  passwordRepeat: TLoginField;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isLoading: boolean;
 };
 
-export const LoginForm: FC<TProps> = ({ className, email, password, onSubmit, isLoading }) => {
+export const SignupForm: FC<TProps> = ({ className, email, password, passwordRepeat, onSubmit, isLoading }) => {
   return (
     <Box className={className}>
       <form onSubmit={onSubmit} method="POST">
@@ -47,8 +48,20 @@ export const LoginForm: FC<TProps> = ({ className, email, password, onSubmit, is
             helperText={password.helper}
             autoComplete="current-password"
           />
+          <TextField
+            fullWidth
+            type="password"
+            label={passwordRepeat.name}
+            variant="outlined"
+            name={passwordRepeat.name}
+            value={passwordRepeat.value}
+            onChange={passwordRepeat.onChange}
+            error={!!passwordRepeat.error}
+            helperText={passwordRepeat.helper}
+            autoComplete="current-password"
+          />
           <LoadingButton loading={isLoading} type="submit" variant="contained" color="primary" size="large">
-            Войти
+            Создать аккаунт
           </LoadingButton>
         </Stack>
       </form>

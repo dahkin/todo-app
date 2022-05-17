@@ -1,39 +1,36 @@
 import React, { FC, useEffect, createRef, useReducer } from 'react';
-import { reducer } from '../../reducer';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import { tasksReducer } from './helpers';
 import { SnackbarMessage } from '../../types';
 import { getTasks } from '../../api';
 import { Task } from '@components/Task/Task';
 import { EditTask } from '@components/EditTask/EditTask';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
-import Divider from '@mui/material/Divider';
-import AddIcon from '@mui/icons-material/Add';
+import { IconPlaceholder } from '@components/IconPlaceholder/IconPlaceholder';
+import { useAuthContext } from '../../features/auth/AuthContextProvider';
+// Icons
 import noodle from '../../images/noodle.svg';
 import donut from '../../images/donut.svg';
-
-export interface State {
-  open: boolean;
-  snackPack: readonly SnackbarMessage[];
-  snackPackMessage?: SnackbarMessage;
-}
+import coffee from '../../images/coffee.svg';
+// Styles
+import './TaskList.css';
+// MUI
+import { Stack, Button, Snackbar, Alert, Divider, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 
 export const TaskList: FC = () => {
+  const { user } = useAuthContext();
   const [loading, setLoading] = React.useState<boolean>(true);
   const [expandedAddNew, setExpandedAddNew] = React.useState<boolean>(false);
-
-  const [snackPack, setSnackPack] = React.useState<readonly SnackbarMessage[]>([]);
-  const [snackPackMessage, setSnackPackMessage] = React.useState<SnackbarMessage | undefined>(undefined);
-  const [openSnackbar, setOpenSnackbar] = React.useState(false);
-
+  const [clearedTasks, setClearedTasks] = React.useState<boolean>(false);
   const [editedTask, setEditedTask] = React.useState<string>('');
   const addNewRef = createRef<HTMLDivElement>();
 
+  // Snackpack (stack of alerts)
+  const [snackPack, setSnackPack] = React.useState<readonly SnackbarMessage[]>([]);
+  const [snackPackMessage, setSnackPackMessage] = React.useState<SnackbarMessage | undefined>(undefined);
+  const [openSnackbar, setOpenSnackbar] = React.useState<boolean>(false);
+
   React.useEffect(() => {
-    if (snackPack.length && !snackPackMessage) {
+    if (snackPack.length > 0 && !snackPackMessage) {
       setSnackPackMessage({ ...snackPack[0] });
       setSnackPack((prev) => prev.slice(1));
       setOpenSnackbar(true);
@@ -46,6 +43,14 @@ export const TaskList: FC = () => {
     setSnackPackMessage(undefined);
   };
 
+  const addSnackbarMessage = (
+    status: SnackbarMessage['status'],
+    message: SnackbarMessage['message'],
+    action?: SnackbarMessage['action']
+  ) => {
+    setSnackPack((prev) => [...prev, { status: status, message: message, action: action, key: new Date().getTime() }]);
+  };
+
   const handleCloseSnackbar = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -53,9 +58,11 @@ export const TaskList: FC = () => {
     setOpenSnackbar(false);
   };
 
-  const [state, dispatch] = useReducer(reducer, { tasks: [] });
+  // Get tasks list from firebase
+  const [state, dispatch] = useReducer(tasksReducer, { tasks: [] });
+
   useEffect(() => {
-    getTasks().then((tasksData) => {
+    getTasks(user.uid).then((tasksData) => {
       dispatch({
         type: 'fetch',
         data: tasksData,
@@ -64,97 +71,102 @@ export const TaskList: FC = () => {
     });
   }, []);
 
-  // Add new section expand/collapse
+  // Filter only active tasks
+  const activeTasks = state.tasks.filter((task) => task.isRemoved === false);
+
+  // Expand/collapse of the 'Add new task' section
   const expandAddNew = () => {
     setExpandedAddNew(true);
   };
-
-  useEffect(() => {
-    if (expandedAddNew) {
-      addNewRef.current && addNewRef.current.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' });
-      setEditedTask('');
-    }
-    //
-  }, [expandedAddNew]);
 
   const cancelAddNew = () => {
     setExpandedAddNew(false);
   };
 
-  console.log(state);
+  // Scrolling to the opened section
+  useEffect(() => {
+    if (expandedAddNew) {
+      addNewRef.current?.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' });
+      // Close opened 'Edit task' section
+      setEditedTask('');
+    }
+  }, [expandedAddNew]);
 
   return (
     <Stack direction="column" alignItems="center" spacing={4}>
       <Typography variant="h4">Задачи</Typography>
-
-      <>
-        <Stack
-          direction="column"
-          spacing={1}
-          divider={<Divider variant="middle" flexItem sx={{ opacity: '.3' }} />}
-          sx={{ width: '100%' }}
-        >
-          {!loading ? (
-            state.tasks.filter((task) => task.isRemoved === false).length > 0 ? (
-              state.tasks.map(
-                (item) =>
-                  !item.isRemoved && (
-                    <Task
-                      task={item}
-                      setSnackbarMessage={setSnackPack}
-                      key={item.id}
-                      edit={(id, value) => dispatch({ type: 'edit', id: id, value: value })}
-                      remove={(id) => dispatch({ type: 'remove', id: id })}
-                      editMode={editedTask ? editedTask == item.id : false}
-                      setEditedTask={setEditedTask}
-                      cancelClick={cancelAddNew}
-                    />
-                  )
+      <Stack
+        direction="column"
+        spacing={1}
+        divider={<Divider flexItem sx={{ opacity: '.3' }} />}
+        sx={{ width: '100%' }}
+      >
+        {!loading ? (
+          activeTasks.length > 0 ? (
+            activeTasks.map((item) =>
+              !(editedTask ? editedTask == item.id : false) ? (
+                <Task
+                  task={item}
+                  addSnackbarMessage={addSnackbarMessage}
+                  key={item.id}
+                  editState={(id, value) => {
+                    dispatch({ type: 'edit', id: id, value: value });
+                    setClearedTasks(true);
+                  }}
+                  changeMode={() => {
+                    setEditedTask(item.id);
+                    cancelAddNew();
+                  }}
+                />
+              ) : (
+                <Stack sx={{ pt: 2, pb: 2 }}>
+                  <EditTask
+                    task={item}
+                    addSnackbarMessage={addSnackbarMessage}
+                    editState={(id, value) => {
+                      dispatch({ type: 'edit', id: id, value: value });
+                      setClearedTasks(true);
+                    }}
+                    cancelClick={() => setEditedTask('')}
+                  />
+                </Stack>
               )
-            ) : (
-              <Stack spacing={2} alignItems="center" justifyContent="center" flex="1 0 auto" sx={{ minHeight: 200 }}>
-                <Box sx={{ height: '45px' }}>
-                  <img src={noodle} alt="Картинка для отдыха" aria-hidden="true" />
-                </Box>
-                <Typography variant="h5">Воу-воу, задач больше нет!</Typography>
-              </Stack>
             )
           ) : (
-            <Stack spacing={2} alignItems="center" justifyContent="center" flex="1 0 auto" sx={{ minHeight: 200 }}>
-              <Box sx={{ height: '45px' }}>
-                <img src={donut} alt="Картинка для отдыха" aria-hidden="true" className="tasklist__loader" />
-              </Box>
-              <Typography variant="h5">Загрузка задач...</Typography>
-            </Stack>
-          )}
-        </Stack>
-        <Divider variant="middle" flexItem />
-        <Stack sx={{ width: '100%' }} ref={addNewRef}>
-          {expandedAddNew ? (
-            <EditTask
-              setSnackbarMessage={setSnackPack}
-              cancelClick={cancelAddNew}
-              add={(value) => dispatch({ type: 'add', value: value })}
-              onAddNew={() => setExpandedAddNew(false)}
-              // setEditedTask={setEditedTask}
+            <IconPlaceholder
+              icon={clearedTasks ? noodle : coffee}
+              title={clearedTasks ? 'Воу-воу, задач больше нет!' : 'Пора добавлять задачи!'}
             />
-          ) : (
-            <Stack alignItems="center">
-              <Button variant="outlined" startIcon={<AddIcon />} onClick={expandAddNew}>
-                Добавить новую
-              </Button>
-            </Stack>
-          )}
-        </Stack>
-      </>
+          )
+        ) : (
+          <IconPlaceholder icon={donut} title="Загрузка задач..." isLoader />
+        )}
+      </Stack>
+      <Divider flexItem />
+      <Stack sx={{ width: '100%' }} ref={addNewRef}>
+        {expandedAddNew ? (
+          <EditTask
+            addSnackbarMessage={addSnackbarMessage}
+            cancelClick={cancelAddNew}
+            addState={(value) => dispatch({ type: 'add', value: value })}
+            onAddNew={() => setExpandedAddNew(false)}
+          />
+        ) : (
+          <Stack alignItems="center">
+            <Button variant="outlined" startIcon={<AddIcon />} onClick={expandAddNew}>
+              Добавить новую
+            </Button>
+          </Stack>
+        )}
+      </Stack>
 
+      {/* Snackpack */}
       <Snackbar
         key={snackPackMessage ? snackPackMessage.key : undefined}
         open={openSnackbar}
         autoHideDuration={2000}
         onClose={handleCloseSnackbar}
         TransitionProps={{ onExited: handleExitedSnackbar }}
-        // message={snackPackMessage ? snackPackMessage.message : undefined}
       >
         <Alert
           key={snackPackMessage ? snackPackMessage.key : undefined}

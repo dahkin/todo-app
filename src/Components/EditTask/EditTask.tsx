@@ -1,27 +1,37 @@
 import React, { ChangeEvent, FC, FormEvent, useEffect, useRef, useState, Dispatch, SetStateAction } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 import { getErrors } from './helpers';
-import { InputErrors, InputName, InputRefs, InputValues } from './types';
-import { createPartnerArticle, updatePartnerArticle } from '../../api';
-import { SnackbarMessage } from '../../types';
+import { createTask, updateTask } from '../../api';
 import { Timestamp } from 'firebase/firestore';
-import { TTask } from '../../reducer';
+import { TTask, SnackbarMessage } from '../../types';
+import { InputErrors, InputName, InputRefs, InputValues } from './types';
+import { useAuthContext } from '../../features/auth/AuthContextProvider';
+// MUI
+import { Box, Stack, Button, Typography, TextField } from '@mui/material';
 
 interface Props {
   task?: TTask;
-  setSnackbarMessage: Dispatch<SetStateAction<readonly SnackbarMessage[]>>;
+  addSnackbarMessage: (
+    status: SnackbarMessage['status'],
+    message: SnackbarMessage['message'],
+    action?: SnackbarMessage['action']
+  ) => void;
   cancelClick?: () => void;
-  add?: (value: Omit<TTask, 'created' | 'isRemoved' | 'viewMode'>) => void;
-  edit?: (id: string, value: Partial<Omit<TTask, 'id' | 'created'>>) => void;
+  addState?: (value: Omit<TTask, 'created' | 'isRemoved' | 'viewMode'>) => void;
+  editState?: (id: string, value: Partial<Omit<TTask, 'id' | 'created'>>) => void;
   setEditedTask?: Dispatch<SetStateAction<string>>;
   onAddNew?: VoidFunction;
 }
 
-export const EditTask: FC<Props> = ({ task, setSnackbarMessage, cancelClick, add, edit, onAddNew, setEditedTask }) => {
+export const EditTask: FC<Props> = ({
+  task,
+  addSnackbarMessage,
+  cancelClick,
+  addState,
+  editState,
+  onAddNew,
+  setEditedTask,
+}) => {
+  const { user } = useAuthContext();
   const inputRefs: InputRefs = {
     title: useRef<HTMLInputElement>(),
     description: useRef<HTMLTextAreaElement>(),
@@ -34,6 +44,8 @@ export const EditTask: FC<Props> = ({ task, setSnackbarMessage, cancelClick, add
     title: '',
     description: '',
   });
+
+  // Get input values
   const onChangeInput = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const input = event.currentTarget;
     const name = input.name;
@@ -45,24 +57,25 @@ export const EditTask: FC<Props> = ({ task, setSnackbarMessage, cancelClick, add
     });
   };
 
+  // On form submit
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // 1. Собрать данные
+    // Collect data
     const data = new FormData();
 
     Object.entries(inputValues).forEach(([name, value]) => {
       data.append(name, value);
     });
 
-    // 2. Проверить данные
+    // Check data
     const errors = await getErrors(Array.from(data.entries()) as [InputName, FormDataEntryValue][]);
     const errorsEntries = Object.entries(errors);
 
-    // 3.1 Подстветить ошибки
+    // Highlight errors
     setInputErrors(errors);
 
-    // 3.2 Сфокусироваться на первом ошибочном инпуте
+    // Focus on first error field
     const errorInput = errorsEntries.find(([, value]) => value.length > 0);
 
     if (errorInput) {
@@ -74,49 +87,32 @@ export const EditTask: FC<Props> = ({ task, setSnackbarMessage, cancelClick, add
       return;
     }
 
-    // 4. Если все ок, отправить данные
+    // Send data
     if (task) {
-      updatePartnerArticle(task.id, inputValues)
+      updateTask(user.uid, task.id, inputValues)
         .then(() => {
-          edit && edit(task.id, { title: inputValues.title, description: inputValues.description });
+          editState && editState(task.id, { title: inputValues.title, description: inputValues.description });
           setEditedTask && setEditedTask('');
-          setSnackbarMessage((prev) => [
-            ...prev,
-            { status: 'success', message: 'Задача обновлена', key: new Date().getTime() },
-          ]);
+          addSnackbarMessage('success', 'Задача обновлена');
         })
         .catch((error) => {
-          setSnackbarMessage((prev) => [
-            ...prev,
-            { status: 'error', message: error.message, key: new Date().getTime() },
-          ]);
+          addSnackbarMessage('error', error.message);
         });
     } else {
       const data = { ...inputValues, isRemoved: false, created: Timestamp.now() };
-      createPartnerArticle(data)
+      createTask(user.uid, data)
         .then((id) => {
-          add && add({ id: id, title: inputValues.title, description: inputValues.description });
+          addState && addState({ id: id, title: inputValues.title, description: inputValues.description });
           onAddNew && onAddNew();
-          setSnackbarMessage((prev) => [
-            ...prev,
-            { status: 'success', message: 'Задача создана', key: new Date().getTime() },
-          ]);
+          addSnackbarMessage('success', 'Задача создана');
         })
         .catch((error) => {
-          setSnackbarMessage((prev) => [
-            ...prev,
-            { status: 'error', message: '${error.message}', key: new Date().getTime() },
-          ]);
+          addSnackbarMessage('error', error.message);
         });
     }
   };
 
-  // Cancel
-  const handleCancelClick = () => {
-    cancelClick && cancelClick();
-    setEditedTask && setEditedTask('');
-  };
-
+  // Set initial data
   useEffect(() => {
     if (!task) {
       return;
@@ -162,7 +158,7 @@ export const EditTask: FC<Props> = ({ task, setSnackbarMessage, cancelClick, add
           <Button type="submit" variant="outlined" color="primary">
             Сохранить
           </Button>
-          <Button type="button" color="primary" onClick={handleCancelClick}>
+          <Button type="button" color="primary" onClick={cancelClick}>
             Отмена
           </Button>
         </Stack>

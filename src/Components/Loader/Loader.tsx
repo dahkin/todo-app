@@ -1,8 +1,7 @@
 import React, { FC } from 'react';
 
 // MUI
-import CircularProgress from '@mui/material/CircularProgress';
-import Backdrop from '@mui/material/Backdrop';
+import { CircularProgress, Backdrop } from '@mui/material';
 
 interface Props {
   loading: boolean;
@@ -10,8 +9,8 @@ interface Props {
 
 export const Loader: FC<Props> = ({ loading }) => {
   return (
-    <Backdrop sx={{ color: 'background.paper', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading}>
-      <CircularProgress color="inherit" />
+    <Backdrop invisible sx={{ color: 'background.paper', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading}>
+      <CircularProgress color="primary" />
     </Backdrop>
   );
 };

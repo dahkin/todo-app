@@ -1,61 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
+import { TReducer, TState, TAction, TTask } from '../../types';
 
-export type TTask = {
-  id: string;
-  title: string;
-  description: string;
-  created: {
-    nanoseconds: number;
-    seconds: number;
-  };
-  isRemoved: boolean;
-  viewMode: boolean;
-};
-
-export type TState = {
-  tasks: Array<TTask>;
-};
-
-interface IAction {
-  type: string;
-}
-
-// Fetch task
-interface IFetchAction extends IAction {
-  type: 'fetch';
-  data: Array<TTask>;
-}
-
-// Add task
-interface IAddAction extends IAction {
-  type: 'add';
-  value: Omit<TTask, 'created' | 'isRemoved' | 'viewMode'>;
-}
-
-// Remove task
-interface IRemoveAction extends IAction {
-  type: 'remove';
-  id: string;
-}
-
-// Delete task
-interface IDeleteAction extends IAction {
-  type: 'delete';
-  id: string;
-}
-
-// Edit task
-interface IEditAction extends IAction {
-  type: 'edit';
-  id: string;
-  value: Partial<Omit<TTask, 'id' | 'created'>>;
-}
-
-type TAction = IFetchAction | IAddAction | IRemoveAction | IDeleteAction | IEditAction;
-
-type TReducer = (state: TState, action: TAction) => TState;
-
-export const reducer: TReducer = (state: TState, action: TAction): TState => {
+export const tasksReducer: TReducer = (state: TState, action: TAction): TState => {
   switch (action.type) {
     case 'fetch': {
       return {
@@ -91,10 +37,10 @@ export const reducer: TReducer = (state: TState, action: TAction): TState => {
         tasks: tasks,
       };
     }
-    case 'remove': {
+    case 'toggle-remove': {
       const taskIndex = state.tasks.findIndex((t) => t.id === action.id);
       const task = { ...state.tasks[taskIndex] };
-      task.isRemoved = true;
+      task.isRemoved = !state.tasks[taskIndex].isRemoved;
       const tasks = [...state.tasks];
       tasks.splice(taskIndex, 1, task);
       return {

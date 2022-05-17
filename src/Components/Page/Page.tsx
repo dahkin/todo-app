@@ -1,32 +1,47 @@
-import React, { FC, Fragment } from 'react';
+import React, { FC } from 'react';
+import { useHistory } from 'react-router-dom';
+import { useAuthContext } from '../../features/auth/AuthContextProvider';
+// Styles
 import './Page.css';
-import { Navigation } from '../Navigation/Navigation';
+// MUI
+import { Box, Stack, AppBar, CssBaseline, Toolbar, Grid, Typography, IconButton } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 export const Page: FC = ({ children }) => {
+  const { isAuthenticated, logOut, user } = useAuthContext();
+  const history = useHistory();
+  const onLogOut = () => {
+    logOut();
+    history.push('/login');
+  };
+
   return (
-    <Fragment>
-      <header className="header">
-        <div className="container">
-          <Navigation placement="header" className="header__navigation" />
-        </div>
-      </header>
-
-      <main>{children}</main>
-
-      <footer className="footer">
-        <div className="container">
-          <Navigation placement="footer" className="footer__navigation" />
-          <div className="footer__bottom">
-            <p className="footer__text">
-              Сделано на Frontend курсе в{' '}
-              <a className="footer__link" href="https://karpov.courses/frontend" target="_blank" rel="noreferrer">
-                Karpov.Courses
-              </a>
-            </p>
-            <p className="footer__text footer__text--gray">© 2021</p>
-          </div>
-        </div>
-      </footer>
-    </Fragment>
+    <Box>
+      <CssBaseline />
+      <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          <Typography variant="h5" component="h1" sx={{ flex: '1 0 auto', mr: 2 }}>
+            Туду-лист
+          </Typography>
+          {isAuthenticated && (
+            <Stack spacing={2} direction="row" alignItems="center" className="user-info">
+              <Typography variant="subtitle2" color="inherit" className="user-info__email">
+                {user.email}
+              </Typography>
+              <IconButton color="inherit" onClick={onLogOut} aria-label="Log out">
+                <LogoutIcon />
+              </IconButton>
+            </Stack>
+          )}
+        </Toolbar>
+      </AppBar>
+      <Box component="main" sx={{ flex: '1 0 auto', p: 3 }}>
+        <Grid container justifyContent="center">
+          <Grid item xs={12} sm={8} md={6} lg={5}>
+            {children}
+          </Grid>
+        </Grid>
+      </Box>
+    </Box>
   );
 };

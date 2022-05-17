@@ -1,6 +1,7 @@
 import { UserCredential } from 'firebase/auth';
 
 export type TLoginWithEmailAndPasswordResult = UserCredential;
+export type TCreateUser = UserCredential;
 
 export type TAuthContext = {
   // boolean - определенное состояние. null - неизвестное (загрузка)
@@ -8,6 +9,7 @@ export type TAuthContext = {
   user?: any;
   loginWithEmailAndPassword: (email: string, password: string) => Promise<TLoginWithEmailAndPasswordResult>;
   loginWithOauthPopup: (provider: string) => Promise<TLoginWithEmailAndPasswordResult>;
+  createUser: (email: string, password: string) => Promise<TCreateUser>;
   logOut: () => void;
   auth?: any;
 };

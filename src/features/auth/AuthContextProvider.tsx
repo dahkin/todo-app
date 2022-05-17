@@ -9,6 +9,7 @@ import {
   ProviderId,
   GoogleAuthProvider,
   GithubAuthProvider,
+  createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import { TAuthContext } from './types';
 import { FirebaseApp } from 'firebase/app';
@@ -28,6 +29,7 @@ export const authContext = createContext<TAuthContext>({
   loginWithEmailAndPassword: () => Promise.reject({}),
   loginWithOauthPopup: () => Promise.reject({}),
   logOut: () => void 0,
+  createUser: () => Promise.reject({}),
 });
 
 export const useAuthContext = (): TAuthContext => {
@@ -79,6 +81,18 @@ export const AuthContextProvider: FC<TProps> = (props) => {
     return processLogin(signInWithPopup(auth, ALLOWED_OAUTH_PROVIDERS[providerId]));
   };
 
+  const createUser = (email: string, password: string) => {
+    setUser(null);
+    setIsAuthenticated(null);
+    return createUserWithEmailAndPassword(auth, email, password)
+      .then((result) => {
+        return result;
+      })
+      .catch((error) => {
+        throw error;
+      });
+  };
+
   const logOut = () => {
     signOut(auth);
     setIsAuthenticated(false);
@@ -92,6 +106,7 @@ export const AuthContextProvider: FC<TProps> = (props) => {
         loginWithEmailAndPassword,
         loginWithOauthPopup,
         logOut,
+        createUser,
       }}
     >
       {props.children}

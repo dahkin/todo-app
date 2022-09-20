@@ -98,7 +98,7 @@ export const Task: FC<Props> = ({ task, addSnackbarMessage, editState, changeMod
           }}
         />
         <Box sx={{ ml: 1, mr: 1, wordBreak: 'break-word' }}>
-          <Typography variant="h5" component="div">
+          <Typography variant="h5" component="div" style={{ textDecoration: isChecked ? 'line-through' : 'none' }}>
             {task.title}
           </Typography>
           {task.description && (

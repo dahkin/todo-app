@@ -7,6 +7,30 @@ import { TaskList } from '../TaskList/TaskList';
 import { PrivateRoute } from '../PrivateRoute/PrivateRoute';
 import { LoginContainer } from '../../features/auth/login/LoginContainer';
 
+import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+
+const AUTH_TOKEN = 'auth-token';
+
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem(AUTH_TOKEN);
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+const httpLink = createHttpLink({
+  uri: 'https://cms.trial-task.k8s.ext.fcse.io/graphql',
+});
+
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+});
+
 export const App: FC = () => {
   const { pathname } = useLocation();
 
@@ -15,24 +39,21 @@ export const App: FC = () => {
   }, [pathname]);
 
   return (
-    <ThemeProvider theme={theme}>
-      <Switch>
-        <Route path="/login">
-          <Page>
-            <LoginContainer />
-          </Page>
-        </Route>
-        <Route path="/signup">
-          <Page>
-            <LoginContainer />
-          </Page>
-        </Route>
-        <PrivateRoute path="/">
-          <Page>
-            <TaskList />
-          </Page>
-        </PrivateRoute>
-      </Switch>
-    </ThemeProvider>
+    <ApolloProvider client={client}>
+      <ThemeProvider theme={theme}>
+        <Switch>
+          <Route path="/login">
+            <Page>
+              <LoginContainer />
+            </Page>
+          </Route>
+          <PrivateRoute path="/">
+            <Page>
+              <TaskList />
+            </Page>
+          </PrivateRoute>
+        </Switch>
+      </ThemeProvider>
+    </ApolloProvider>
   );
 };

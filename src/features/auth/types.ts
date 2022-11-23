@@ -1,15 +1,22 @@
-import { UserCredential } from 'firebase/auth';
+import { Dispatch, SetStateAction } from 'react';
 
-export type TLoginWithEmailAndPasswordResult = UserCredential;
-export type TCreateUser = UserCredential;
+export type TLoginResult = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+};
+
+export type TToken = {
+  exp: Date;
+  iat: Date;
+  id: number;
+};
 
 export type TAuthContext = {
-  // boolean - определенное состояние. null - неизвестное (загрузка)
-  isAuthenticated: boolean | null;
-  user?: any;
-  loginWithEmailAndPassword: (email: string, password: string) => Promise<TLoginWithEmailAndPasswordResult>;
-  loginWithOauthPopup: (provider: string) => Promise<TLoginWithEmailAndPasswordResult>;
-  createUser: (email: string, password: string) => Promise<TCreateUser>;
-  logOut: () => void;
-  auth?: any;
+  user: TToken | null;
+  setUser: Dispatch<SetStateAction<TToken | null>>;
+  // login?: (email: string, password: string) => Promise<TLoginResult>;
+  // logOut: () => void;
+  // auth?: any;
 };

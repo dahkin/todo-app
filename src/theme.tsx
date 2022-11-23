@@ -32,27 +32,6 @@ export const theme = createTheme({
     },
     divider: '#ccd6e1',
   },
-  typography: {
-    h1: {
-      fontSize: '3.2rem',
-    },
-    fontSize: 16,
-    h2: {
-      fontSize: '2.7rem',
-    },
-    h3: {
-      fontSize: '2rem',
-    },
-    h4: {
-      fontSize: '1.5rem',
-    },
-    h5: {
-      fontSize: '1.3rem',
-    },
-    h6: {
-      fontSize: '1rem',
-    },
-  },
   components: {
     // Name of the component
     MuiOutlinedInput: {
@@ -61,12 +40,9 @@ export const theme = createTheme({
           borderColor: '#ccd6e1',
         },
         root: {
-          '&(:not(.Mui-error):hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#74c1b9',
+          'input:readonly + .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'red',
           },
-        },
-        input: {
-          fontSize: '1rem',
         },
       },
     },

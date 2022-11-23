@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 // MUI
 import { Box, Stack, TextField } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
+import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 
 export type TLoginField = {
   name: string;
@@ -19,10 +20,10 @@ type TProps = {
   isLoading: boolean;
 };
 
-export const LoginForm: FC<TProps> = ({ className, email, password, onSubmit, isLoading }) => {
+export const LoginForm: FC<TProps> = ({ className, onSubmit, email, password, isLoading }) => {
   return (
     <Box className={className}>
-      <form onSubmit={onSubmit} method="POST">
+      <form onSubmit={onSubmit}>
         <Stack direction="column" spacing={2}>
           <TextField
             fullWidth
@@ -47,9 +48,17 @@ export const LoginForm: FC<TProps> = ({ className, email, password, onSubmit, is
             helperText={password.helper}
             autoComplete="current-password"
           />
-          <LoadingButton loading={isLoading} type="submit" variant="contained" color="primary" size="large">
-            Войти
-          </LoadingButton>
+          <Stack direction="row" justifyContent="flex-end">
+            <LoadingButton
+              loading={isLoading}
+              type="submit"
+              variant="contained"
+              color="primary"
+              startIcon={<LoginOutlinedIcon />}
+            >
+              Log in
+            </LoadingButton>
+          </Stack>
         </Stack>
       </form>
     </Box>

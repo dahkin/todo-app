@@ -1,8 +1,10 @@
 import React, { FC } from 'react';
+
 // MUI
 import { Box, Stack, TextField } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
+import { useTranslation } from 'react-i18next';
 
 export type TLoginField = {
   name: string;
@@ -21,31 +23,33 @@ type TProps = {
 };
 
 export const LoginForm: FC<TProps> = ({ className, onSubmit, email, password, isLoading }) => {
+  const { t } = useTranslation();
+
   return (
     <Box className={className}>
       <form onSubmit={onSubmit}>
         <Stack direction="column" spacing={2}>
           <TextField
             fullWidth
-            label={email.name}
+            label={t(email.name)}
             variant="outlined"
             name={email.name}
             value={email.value}
             onChange={email.onChange}
             error={!!email.error}
-            helperText={email.helper}
+            helperText={email.helper && t(email.helper)}
             autoComplete="email"
           />
           <TextField
             fullWidth
             type="password"
-            label={password.name}
+            label={t(password.name)}
             variant="outlined"
             name={password.name}
             value={password.value}
             onChange={password.onChange}
             error={!!password.error}
-            helperText={password.helper}
+            helperText={password.helper && t(password.helper)}
             autoComplete="current-password"
           />
           <Stack direction="row" justifyContent="flex-end">
@@ -56,7 +60,7 @@ export const LoginForm: FC<TProps> = ({ className, onSubmit, email, password, is
               color="primary"
               startIcon={<LoginOutlinedIcon />}
             >
-              Log in
+              {t('login')}
             </LoadingButton>
           </Stack>
         </Stack>

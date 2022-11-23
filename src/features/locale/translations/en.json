@@ -1,0 +1,16 @@
+{
+  "account_title": "Account",
+  "locale_switcher": "Change language",
+  "firstname": "First name",
+  "lastname": "Last name",
+  "logout": "Log out",
+  "login": "Log in",
+  "signin": "Sign in",
+  "email": "Email",
+  "password": "Password",
+  "network_error": "Please check your connection and try one more time",
+  "server_error": "Please check your credentials and try one more time",
+  "email_validation_error": "Please enter correct email",
+  "email_required_error": "Email is required",
+  "password_required_error": "Password is required"
+}

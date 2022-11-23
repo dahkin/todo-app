@@ -1,40 +1,28 @@
 import React, { FC } from 'react';
-import { useHistory } from 'react-router-dom';
-import { useAuthContext } from '../../features/auth/AuthContextProvider';
-// Styles
-import './Page.css';
+import { useAuthContext } from '@features/auth/AuthContextProvider';
+import { LocaleSwitcher } from '@features/locale/components/LocaleSwitcher/LocaleSwitcher';
+
 // MUI
-import { Box, Stack, AppBar, CssBaseline, Toolbar, Grid, Typography, IconButton } from '@mui/material';
+import { Stack, Box, AppBar, Toolbar, Grid, IconButton } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
-// import { useToken } from '../../features/auth/useToken';
+import { useTranslation } from 'react-i18next';
 
 export const Page: FC = ({ children }) => {
-  // const history = useHistory();
-  // const onLogOut = () => {
-  //   logOut();
-  //   history.push('/login');
-  // };
-
-  const { user } = useAuthContext();
+  const { token, logOut } = useAuthContext();
+  const { t } = useTranslation();
 
   return (
     <Box>
-      <CssBaseline />
       <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
-          <Typography variant="h5" component="h1" sx={{ flex: '1 0 auto', mr: 2 }}>
-            Trial task
-          </Typography>
-          {user && (
-            <Stack spacing={2} direction="row" alignItems="center" className="user-info">
-              <Typography variant="subtitle2" color="inherit" className="user-info__email">
-                {/*{user.email}*/}
-              </Typography>
-              {/*<IconButton color="inherit" onClick={onLogOut} aria-label="Log out">*/}
-              {/*  <LogoutIcon />*/}
-              {/*</IconButton>*/}
-            </Stack>
-          )}
+          <Stack spacing={2} direction="row" alignItems="center" justifyContent="flex-end" flex="1 0 auto">
+            <LocaleSwitcher />
+            {token && (
+              <IconButton color="inherit" onClick={logOut} aria-label={`${t('logout')}`}>
+                <LogoutIcon />
+              </IconButton>
+            )}
+          </Stack>
         </Toolbar>
       </AppBar>
       <Box component="main" sx={{ flex: '1 0 auto', p: 3 }}>

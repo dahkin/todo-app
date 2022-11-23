@@ -1,22 +1,15 @@
 import { Dispatch, SetStateAction } from 'react';
 
-export type TLoginResult = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-};
-
 export type TToken = {
-  exp: Date;
-  iat: Date;
+  exp: number;
+  iat: number;
   id: number;
 };
 
 export type TAuthContext = {
-  user: TToken | null;
-  setUser: Dispatch<SetStateAction<TToken | null>>;
-  // login?: (email: string, password: string) => Promise<TLoginResult>;
-  // logOut: () => void;
-  // auth?: any;
+  tokenJWT: TToken | null;
+  token: string | null;
+  setToken: Dispatch<SetStateAction<string | null>>;
+  logIn: (token: string, email?: string) => void;
+  logOut: () => void;
 };

@@ -30,7 +30,18 @@ export const theme = createTheme({
     error: {
       main: '#D03744',
     },
-    divider: '#ccd6e1',
+    divider: '#e1e5f1',
+  },
+  typography: {
+    h1: {
+      fontSize: '2rem',
+    },
+    h2: {
+      fontSize: '1.5em',
+    },
+    h3: {
+      fontSize: '1.3rem',
+    },
   },
   components: {
     // Name of the component
@@ -40,9 +51,7 @@ export const theme = createTheme({
           borderColor: '#ccd6e1',
         },
         root: {
-          'input:readonly + .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'red',
-          },
+          background: '#fff',
         },
       },
     },

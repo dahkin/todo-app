@@ -1,68 +1,60 @@
 import React, { createContext, FC, useContext, useEffect, useState } from 'react';
-import { TAuthContext } from './types';
-
-type TProps = {
-  children: React.ReactNode;
-};
+import jwt from 'jwt-decode';
+import { TAuthContext, TToken } from './types';
+import { AUTH_TOKEN } from './constants';
 
 export const authContext = createContext<TAuthContext>({
-  user: null,
-  setUser: () => void 0,
+  token: null,
+  setToken: () => void 0,
+  tokenJWT: null,
+  logIn: () => void 0,
+  logOut: () => void 0,
 });
 
 export const useAuthContext = (): TAuthContext => {
   return useContext<TAuthContext>(authContext);
 };
 
-export const AuthContextProvider: FC<TProps> = (props) => {
-  const [user, setUser] = useState<any>(null);
+export const AuthContextProvider: FC = (props) => {
+  const getToken = (): string | null => localStorage.getItem(AUTH_TOKEN);
 
-  // useEffect(() => {
-  // if (!auth) {
-  //   return;
-  // }
-  // auth.setPersistence(browserLocalPersistence);
-  // auth.languageCode = 'ru';
-  // auth.onAuthStateChanged((user) => {
-  //   if (user) {
-  //     setUser(user);
-  //     setIsAuthenticated(true);
-  //   } else {
-  //     setUser(null);
-  //     setIsAuthenticated(false);
-  //   }
-  // });
-  // }, [auth]);
+  const [token, setToken] = useState<string | null>(getToken());
+  const [tokenJWT, setTokenJWT] = useState<TToken | null>(null);
 
-  // const processLogin = (loginPromise: Promise<UserCredential>) => {
-  //   setUser(null);
-  //   setIsAuthenticated(null);
-  //   return loginPromise
-  //     .then((result) => {
-  //       // log success auth
-  //       return result;
-  //     })
-  //     .catch((error) => {
-  //       // log auth errors
-  //       throw error;
-  //     });
-  // };
+  // Store parsed token value
+  useEffect(() => {
+    if (token) {
+      const parsedToken = jwt(token) as TToken;
 
-  // const login = (email: string, password: string) => {
-  //   return null;
-  //   // return processLogin(signInWithEmailAndPassword(auth, email, password));
-  // };
+      // Check token expiration date
+      if (parsedToken.exp * 1000 >= Date.now()) {
+        setTokenJWT(jwt(token));
+      } else {
+        logOut();
+      }
+    } else {
+      setTokenJWT(null);
+    }
+  }, [token]);
 
-  // const logOut = () => {
-  //   // signOut(auth);
-  //   setIsAuthenticated(false);
-  // };
+  const logIn = (token: string) => {
+    localStorage.setItem(AUTH_TOKEN, token);
+    setToken(token);
+  };
+
+  const logOut = () => {
+    localStorage.removeItem(AUTH_TOKEN);
+    setToken(null);
+  };
 
   return (
     <authContext.Provider
       value={{
-        setUser,
-        user,
+        token,
+        setToken,
+        tokenJWT,
+        logIn,
+        logOut,
       }}
     >
       {props.children}

@@ -1,30 +1,16 @@
-import { Redirect, Route, RouteProps } from 'react-router-dom';
 import React, { FC } from 'react';
-// import { useAuthContext } from '../../features/auth/AuthContextProvider';
-import { Loader } from '../Loader/Loader';
-import { useToken } from '../../features/auth/useToken';
-import { useAuthContext } from '../../features/auth/AuthContextProvider';
+import { Redirect, Route, RouteProps } from 'react-router-dom';
 
-type TProps = {
-  children: React.ReactNode;
-} & RouteProps;
+import { useAuthContext } from '@features/auth/AuthContextProvider';
 
-export const PrivateRoute: FC<TProps> = ({ children, ...rest }) => {
-  const { user } = useAuthContext();
+export const PrivateRoute: FC<RouteProps> = ({ children, ...rest }) => {
+  const { token } = useAuthContext();
 
-  // if (isAuthenticated === null) {
-  //   return <Loader loading />;
-  // }
-
-  // if (!token) return 'Loading...';
-  // if (token === null) {
-  //   return <Loader loading />;
-  // }
   return (
     <Route
       {...rest}
       render={(props) =>
-        user ? (
+        token ? (
           children
         ) : (
           <Redirect

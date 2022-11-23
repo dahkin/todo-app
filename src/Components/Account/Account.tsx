@@ -1,28 +1,27 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useQuery } from '@apollo/client';
+
+import { Loader } from '../Loader/Loader';
+import { GET_USER } from '@features/auth/queries';
+import { useAuthContext } from '@features/auth/AuthContextProvider';
 
 // MUI
 import { Stack, Button, Typography, TextField, InputAdornment } from '@mui/material';
 import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
-import { Loader } from '../Loader/Loader';
-
-import { gql, useQuery } from '@apollo/client';
-import { useHistory } from 'react-router-dom';
-import { useToken } from '../../features/auth/useToken';
-import { GET_USER } from '../../features/auth/queries';
-import { useAuthContext } from '../../features/auth/AuthContextProvider';
-
-export const TaskList: FC = () => {
-  const { token, clearAuthData } = useToken();
-  const { user, setUser } = useAuthContext();
+export const Account: FC = () => {
+  const { tokenJWT, logOut } = useAuthContext();
 
   const { loading, error, data } = useQuery(GET_USER, {
     variables: {
-      id: user,
+      id: tokenJWT && tokenJWT.id,
     },
   });
+
+  const { t } = useTranslation();
 
   if (loading) return <Loader loading />;
   if (error) return <div>{`Error! ${error.message}`}</div>;
@@ -30,13 +29,13 @@ export const TaskList: FC = () => {
   return (
     <Stack direction="column" spacing={4}>
       <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-        <AccountCircleIcon fontSize="large" />
-        <Typography variant="h4">User</Typography>
+        <AccountCircleOutlinedIcon fontSize="large" />
+        <Typography variant="h1">{t('account_title')}</Typography>
       </Stack>
       <Stack direction="column" spacing={2}>
         <TextField
           fullWidth
-          label="First Name"
+          label={t('firstname')}
           variant="outlined"
           name="first-name"
           defaultValue={data.user.firstName}
@@ -52,7 +51,7 @@ export const TaskList: FC = () => {
         />
         <TextField
           fullWidth
-          label="Last Name"
+          label={t('lastname')}
           variant="outlined"
           name="last-name"
           defaultValue={data.user.lastName}
@@ -66,18 +65,8 @@ export const TaskList: FC = () => {
           }}
         />
         <Stack direction="row" justifyContent="flex-end">
-          <Button
-            type="button"
-            variant="contained"
-            color="error"
-            onClick={() => {
-              clearAuthData();
-              setUser(null);
-              // navigate.push(`/login`);
-            }}
-            startIcon={<LogoutOutlinedIcon />}
-          >
-            Log out
+          <Button type="button" variant="contained" color="error" onClick={logOut} startIcon={<LogoutOutlinedIcon />}>
+            {t('logout')}
           </Button>
         </Stack>
       </Stack>

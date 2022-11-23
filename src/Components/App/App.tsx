@@ -1,16 +1,13 @@
 import React, { FC, useEffect } from 'react';
 import { Switch, Route, useLocation } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
-import { theme } from '../../theme';
-import { Page } from '../Page/Page';
-import { TaskList } from '../TaskList/TaskList';
-import { PrivateRoute } from '../PrivateRoute/PrivateRoute';
-import { LoginContainer } from '../../features/auth/login/LoginContainer';
-
-import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 
-const AUTH_TOKEN = 'auth-token';
+import { Page } from '@components/Page/Page';
+import { Account } from '@components/Account/Account';
+import { PrivateRoute } from '@components/PrivateRoute/PrivateRoute';
+import { LoginContainer } from '@features/auth/components/LoginContainer/LoginContainer';
+import { AUTH_TOKEN } from '@features/auth/constants';
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem(AUTH_TOKEN);
@@ -40,20 +37,18 @@ export const App: FC = () => {
 
   return (
     <ApolloProvider client={client}>
-      <ThemeProvider theme={theme}>
-        <Switch>
-          <Route path="/login">
-            <Page>
-              <LoginContainer />
-            </Page>
-          </Route>
-          <PrivateRoute path="/">
-            <Page>
-              <TaskList />
-            </Page>
-          </PrivateRoute>
-        </Switch>
-      </ThemeProvider>
+      <Switch>
+        <Route path="/login">
+          <Page>
+            <LoginContainer />
+          </Page>
+        </Route>
+        <PrivateRoute path="/">
+          <Page>
+            <Account />
+          </Page>
+        </PrivateRoute>
+      </Switch>
     </ApolloProvider>
   );
 };

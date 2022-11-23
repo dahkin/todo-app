@@ -1,15 +1,15 @@
-import { LoginForm, TLoginField } from '@components/LoginForm/LoginForm';
-import React, { FC, Reducer, useEffect, useReducer, useState } from 'react';
-import { Typography, Stack, Alert } from '@mui/material';
+import React, { FC, Reducer, useReducer, useState } from 'react';
+import { Redirect } from 'react-router-dom';
+import { useMutation } from '@apollo/client';
 
 import { validateEmail } from './utils';
-import { Redirect, useHistory } from 'react-router-dom';
-import { useMutation } from '@apollo/client';
-import { useAuthContext } from '../AuthContextProvider';
-import { useToken } from '../useToken';
-import { LOGIN_MUTATION } from '../queries';
-import jwt from 'jwt-decode';
-import { TToken } from '../types';
+import { useAuthContext } from '../../AuthContextProvider';
+import { LOGIN_MUTATION } from '../../queries';
+import { LoginForm, TLoginField } from '@components/LoginForm/LoginForm';
+
+// MUI
+import { Typography, Stack, Alert } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 type TLoginFormFieldState = Omit<TLoginField, 'onChange'>;
 
@@ -36,53 +36,44 @@ function reducer(state: TLoginFormFieldState, action: Action): TLoginFormFieldSt
 }
 
 export const LoginContainer: FC = () => {
-  const history = useHistory();
-
   const [authError, setAuthError] = useState('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const { t } = useTranslation();
+
   const [emailState, dispatchEmail] = useReducer<Reducer<TLoginFormFieldState, Action>>(reducer, {
-    name: 'Email',
+    name: 'email',
     value: '',
   });
 
   const [passwordState, dispatchPassword] = useReducer<Reducer<TLoginFormFieldState, Action>>(reducer, {
-    name: 'Password',
+    name: 'password',
     value: '',
   });
 
-  const { setUser } = useAuthContext();
-  const { token, setToken } = useToken();
+  const { token, logIn } = useAuthContext();
 
-  useEffect(() => {
-    if (token) {
-      const user = jwt(token) as TToken;
-      console.log(user);
-      setUser(user);
-    }
-  }, [token]);
-
-  const [login] = useMutation(LOGIN_MUTATION, {
+  const [auth] = useMutation(LOGIN_MUTATION, {
     variables: {
-      identifier: emailState.value, //email.value,  'test@freshcells.de'
-      password: passwordState.value, //password.value, 'KTKwXm2grV4wHzW'
+      identifier: emailState.value, //'test@freshcells.de'
+      password: passwordState.value, //'KTKwXm2grV4wHzW'
     },
     onCompleted: ({ login }) => {
       setIsLoading(false);
-      setToken(login.jwt);
-      history.push('/');
+      logIn && logIn(login.jwt);
     },
     onError: ({ graphQLErrors, networkError }) => {
       setIsLoading(false);
 
       if (networkError) {
-        setAuthError('Please check your connection and try one more time');
+        setAuthError('network_error');
       }
 
       if (graphQLErrors)
         graphQLErrors.forEach(({ message, extensions }) => {
           switch (extensions.code) {
             case 'INTERNAL_SERVER_ERROR':
-              setAuthError('Please check your credentials and try one more time');
+              setAuthError('server_error');
               break;
             default:
               setAuthError(message);
@@ -96,30 +87,33 @@ export const LoginContainer: FC = () => {
     setIsLoading(true);
     setAuthError('');
     let valid = true;
+
+    // Check email
     if (emailState.value.length === 0) {
       dispatchEmail({
         type: 'error',
-        value: 'Email is required',
+        value: 'email_required_error',
       });
       valid = false;
     } else if (!validateEmail(emailState.value)) {
       dispatchEmail({
         type: 'error',
-        value: 'Please enter correct email',
+        value: 'email_validation_error',
       });
       valid = false;
     }
 
+    // Check password
     if (passwordState.value.length === 0) {
       dispatchPassword({
         type: 'error',
-        value: 'Password  is required',
+        value: 'password_required_error',
       });
       valid = false;
     }
 
     if (valid) {
-      login();
+      auth();
     } else {
       setIsLoading(false);
     }
@@ -133,14 +127,10 @@ export const LoginContainer: FC = () => {
     />
   ) : (
     <Stack direction="column" spacing={4}>
-      <Typography variant="h4" align="center">
-        Sign in
+      <Typography variant="h1" align="center">
+        {t('signin')}
       </Typography>
-      {authError && (
-        <Alert severity="error" sx={{ width: '100%' }}>
-          {authError}
-        </Alert>
-      )}
+      {authError && <Alert severity="error">{t(authError)}</Alert>}
       <LoginForm
         email={{
           ...emailState,

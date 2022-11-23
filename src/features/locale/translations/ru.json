@@ -1,0 +1,16 @@
+{
+  "account_title": "Аккаунт",
+  "locale_switcher": "Переключить язык",
+  "firstname": "Имя",
+  "lastname": "Фамилия",
+  "logout": "Выйти",
+  "login": "Войти",
+  "signin": "Вход",
+  "email": "Email",
+  "password": "Пароль",
+  "network_error": "Проверьте ваше соединение и попробуйте еще раз",
+  "server_error": "Проверьте ваши данные и попробуйте еще раз",
+  "email_validation_error": "Введите корректный email",
+  "email_required_error": "Введите email",
+  "password_required_error": "Введите пароль"
+}

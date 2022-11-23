@@ -1,6 +1,4 @@
-# ToDo app
-
-To-Do list app on React(Typescript) and Firebase(backend with authorization), using Material UI
+# Trial task
 
 To start run:
 
@@ -8,4 +6,4 @@ To start run:
 npm run start
 ```
 
-Check it live on GitHub Pages: [ToDo App](https://dahkin.github.io/todo-app/)
+Check it live on GitHub Pages: [trial task](https://dahkin.github.io/trial-task/)
